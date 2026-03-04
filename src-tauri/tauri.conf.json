@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "app-tauri-android-demo",
+  "productName": "Just do it",
   "version": "0.1.0",
   "identifier": "com.creteper.app-tauri-android-demo",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "app-tauri-android-demo",
+        "title": "Just do it",
         "width": 800,
         "height": 600
       }
