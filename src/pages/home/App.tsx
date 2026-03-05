@@ -1,10 +1,12 @@
 import "@/App.css";
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { BottomNavigationBar, BottomNavigationItem } from "@/components/nav/bottom-navigation";
 import { TitleBar } from "@/components/text/title-bar";
 import { SelectDistrictDrawer } from "@/components/drawer/SelectDistrictDrawer";
 import { policeApi } from "@/lib/request";
+import { Plus } from "lucide-react";
 
 // 违章数据类型
 interface Violation {
@@ -46,6 +48,7 @@ function maskPhone(phone: string): string {
 }
 
 function DefaultPage() {
+  const navigate = useNavigate();
   // 状态管理
   const [violations, setViolations] = useState<Violation[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -146,7 +149,17 @@ function DefaultPage() {
 
   return (
     <main className="pt-10 w-full h-full bg-background flex flex-col">
-      <TitleBar>处理 ({currentIndex + 1}/{violations.length})</TitleBar>
+      <TitleBar>
+        <div className="flex items-center justify-between w-full pr-4">
+          <span>处理 ({currentIndex + 1}/{violations.length})</span>
+          <button
+            onClick={() => navigate("/upload")}
+            className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
+      </TitleBar>
 
       {/* 可滚动内容区域 */}
       <div className="flex-1 overflow-y-auto bg-muted pb-20 pt-19">

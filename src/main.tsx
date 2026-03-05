@@ -9,6 +9,7 @@ import LoginPage from "./pages/login/Login";
 import RecordPage from "./pages/record/Record";
 import MessageDetailPage from "./pages/detail/MessageDetail";
 import MinePage from "./pages/mine/Mine";
+import UploadViolationPage from "./pages/upload/UploadViolation";
 import AuthGuard from "./components/auth/AuthGuard";
 import { ThemeProvider } from "./components/theme/theme-provider";
 
@@ -43,6 +44,14 @@ const router = createBrowserRouter([
     element: (
       <AuthGuard>
         <MinePage />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: "/upload",
+    element: (
+      <AuthGuard>
+        <UploadViolationPage />
       </AuthGuard>
     ),
   },
