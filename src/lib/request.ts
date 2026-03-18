@@ -170,7 +170,7 @@ export const policeApi = {
   getVillageChief: (id: number) => baseRequest(`/police/village-chief/${id}`),
 
   // 上传违章图片并创建违章记录
-  uploadViolation: (imageFile: File, violationData?: {
+  uploadViolation: async (imageFile: File, violationData?: {
     violationTime?: string;
     violationTag?: string;
     offenderName?: string;
@@ -187,17 +187,24 @@ export const policeApi = {
       });
     }
     const token = getAuthToken();
-    return fetch('https://api.police.message.creteper.xyz/api/police/violations/upload', {
+
+    const response = await fetch('https://api.police.message.creteper.xyz/api/police/violations/upload', {
       method: 'POST',
       headers: {
         ...(token && { 'Authorization': `Bearer ${token}` }),
       },
       body: formData,
-    }).then(async (response) => {
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || '上传失败');
-      return data as ApiResponse<any>;
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(data.error || '上传失败') as Error & { status: number };
+      error.status = response.status;
+      throw error;
+    }
+
+    return data as ApiResponse<any>;
   },
 };
 

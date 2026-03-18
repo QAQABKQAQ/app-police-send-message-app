@@ -12,6 +12,10 @@ import MinePage from "./pages/mine/Mine";
 import UploadViolationPage from "./pages/upload/UploadViolation";
 import AuthGuard from "./components/auth/AuthGuard";
 import { ThemeProvider } from "./components/theme/theme-provider";
+import { getAuthToken } from "./lib/request";
+
+// 初始化时从 localStorage 加载 token
+getAuthToken();
 
 
 const router = createBrowserRouter([

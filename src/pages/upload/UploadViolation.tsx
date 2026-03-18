@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { TitleBar } from "@/components/text/title-bar";
 import { policeApi } from "@/lib/request";
 import { ChevronLeft, Camera, Upload } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 // 违章类型列表（与后端 mock.service 一致）
 const VIOLATION_TAGS = [
@@ -31,6 +39,8 @@ function UploadViolationPage() {
     // 状态
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState("");
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+    const [uploadedData, setUploadedData] = useState<any>(null);
 
     // 处理图片选择
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,16 +88,39 @@ function UploadViolationPage() {
             );
 
             if (response.success) {
-                // 上传成功，跳转回首页
-                navigate("/", { replace: true });
+                // 保存上传成功的数据并显示对话框
+                setUploadedData(response.data);
+                setSuccessDialogOpen(true);
             } else {
                 setError(response.error || "上传失败");
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "上传失败，请检查网络");
+            // 根据不同的HTTP状态码显示不同的错误信息
+            if (err instanceof Error) {
+                const errorWithStatus = err as Error & { status?: number };
+                if (errorWithStatus.status === 401) {
+                    setError("请先登录");
+                } else if (errorWithStatus.status === 404) {
+                    setError("接口不存在，请检查服务器配置");
+                } else if (errorWithStatus.status === 403) {
+                    setError("没有权限访问该接口");
+                } else if (errorWithStatus.status === 500) {
+                    setError("服务器错误，请稍后重试");
+                } else {
+                    setError(err.message || "上传失败，请检查网络");
+                }
+            } else {
+                setError("上传失败，请检查网络");
+            }
         } finally {
             setUploading(false);
         }
+    };
+
+    // 处理成功对话框确认
+    const handleSuccessConfirm = () => {
+        setSuccessDialogOpen(false);
+        navigate("/", { replace: true });
     };
 
     return (
@@ -258,6 +291,51 @@ function UploadViolationPage() {
                     </Button>
                 </div>
             </div>
+
+            {/* 成功对话框 */}
+            <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>上传成功</DialogTitle>
+                        <DialogDescription>
+                            违章记录已成功创建，以下是自动生成的信息：
+                        </DialogDescription>
+                    </DialogHeader>
+                    {uploadedData && (
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">违章类型：</span>
+                                <span className="font-medium">{uploadedData.violationTag}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">车牌号：</span>
+                                <span className="font-medium">{uploadedData.plateNumber}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">违规人员：</span>
+                                <span className="font-medium">{uploadedData.offenderName}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">违规人员手机：</span>
+                                <span className="font-medium">{uploadedData.offenderPhone}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">车主：</span>
+                                <span className="font-medium">{uploadedData.ownerName}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">车主手机：</span>
+                                <span className="font-medium">{uploadedData.ownerPhone}</span>
+                            </div>
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button onClick={handleSuccessConfirm} className="w-full">
+                            确定
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
