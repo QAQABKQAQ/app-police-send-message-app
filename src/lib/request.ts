@@ -32,12 +32,17 @@ export const clearAuthToken = () => {
   localStorage.removeItem('authToken');
 };
 
+// 后端服务器地址
+// export const API_SERVER = 'https://api.police.message.creteper.xyz';
+export const API_SERVER = 'http://192.168.35.236:3000';
+
 // 基础请求函数
 const baseRequest = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
-  const baseUrl = 'https://api.police.message.creteper.xyz/api';
+  // const baseUrl = 'https://api.police.message.creteper.xyz/api';
+  const baseUrl = `${API_SERVER}/api`;
 
   const config: RequestInit = {
     headers: {
@@ -188,7 +193,8 @@ export const policeApi = {
     }
     const token = getAuthToken();
 
-    const response = await fetch('https://api.police.message.creteper.xyz/api/police/violations/upload', {
+    // const response = await fetch('https://api.police.message.creteper.xyz/api/police/violations/upload', {
+    const response = await fetch(`${API_SERVER}/api/police/violations/upload`, {
       method: 'POST',
       headers: {
         ...(token && { 'Authorization': `Bearer ${token}` }),

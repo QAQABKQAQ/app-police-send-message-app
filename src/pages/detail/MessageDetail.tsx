@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { SelectDistrictDrawer } from "@/components/drawer/SelectDistrictDrawer";
-import { policeApi } from "@/lib/request";
+import { policeApi, API_SERVER } from "@/lib/request";
 import { ChevronLeft, Phone } from "lucide-react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
@@ -225,7 +225,9 @@ function MessageDetailPage() {
             </span>
           </div>
           <img
-            src={violation.imageUrl || "https://via.placeholder.com/400x200?text=No+Image"}
+            src={violation.imageUrl
+              ? (violation.imageUrl.startsWith('http') ? violation.imageUrl : `${API_SERVER}${violation.imageUrl}`)
+              : "https://via.placeholder.com/400x200?text=No+Image"}
             alt="违章图片"
             className="w-full h-48 object-cover rounded"
           />

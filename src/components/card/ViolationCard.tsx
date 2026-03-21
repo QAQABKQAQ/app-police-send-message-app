@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { API_SERVER } from "@/lib/request";
 
 // 消息数据类型
 export interface MessageData {
@@ -121,7 +122,9 @@ export function ViolationCard({ data, type, onAction }: ViolationCardProps) {
         {/* 图片 */}
         <div className="w-24 h-20 shrink-0">
           <img
-            src={violation.imageUrl || "https://via.placeholder.com/100x80?text=No+Image"}
+            src={violation.imageUrl
+              ? (violation.imageUrl.startsWith('http') ? violation.imageUrl : `${API_SERVER}${violation.imageUrl}`)
+              : "https://via.placeholder.com/100x80?text=No+Image"}
             alt="违章图片"
             className="w-full h-full object-cover rounded"
           />

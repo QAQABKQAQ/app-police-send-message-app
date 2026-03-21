@@ -1,8 +1,10 @@
 import "@/App.css";
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router";
 import { BottomNavigationBar, BottomNavigationItem } from "@/components/nav/bottom-navigation";
 import { TitleBar } from "@/components/text/title-bar";
-import { authApi } from "@/lib/request";
+import { Button } from "@/components/ui/button";
+import { authApi, clearAuthToken } from "@/lib/request";
 
 // 用户信息类型
 interface UserInfo {
@@ -24,8 +26,15 @@ interface UserInfo {
 }
 
 function MinePage() {
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // 退出登录
+  const handleLogout = () => {
+    clearAuthToken();
+    navigate("/login", { replace: true });
+  };
 
   // 加载用户信息
   const loadUserInfo = useCallback(async () => {
@@ -84,6 +93,17 @@ function MinePage() {
                   警号：{userInfo.badgeNumber || "无"}
                 </p>
               </div>
+            </div>
+
+            {/* 退出登录按钮 */}
+            <div className="bg-background mt-4 p-4">
+              <Button
+                onClick={handleLogout}
+                variant="destructive"
+                className="w-full"
+              >
+                退出登录
+              </Button>
             </div>
           </div>
         ) : (

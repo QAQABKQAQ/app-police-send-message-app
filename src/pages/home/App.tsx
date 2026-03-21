@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNavigationBar, BottomNavigationItem } from "@/components/nav/bottom-navigation";
 import { TitleBar } from "@/components/text/title-bar";
 import { SelectDistrictDrawer } from "@/components/drawer/SelectDistrictDrawer";
-import { policeApi } from "@/lib/request";
+import { policeApi, API_SERVER } from "@/lib/request";
 import { Plus } from "lucide-react";
 
 // 违章数据类型
@@ -134,9 +134,26 @@ function DefaultPage() {
   if (!currentViolation) {
     return (
       <main className="pt-10 w-full h-full bg-background">
-        <TitleBar>处理</TitleBar>
-        <div className="flex items-center justify-center h-[calc(100vh-10rem)] pt-19">
+        <TitleBar>
+          <div className="flex items-center justify-between w-full pr-4">
+            <span>处理</span>
+            <button
+              onClick={() => navigate("/upload")}
+              className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+        </TitleBar>
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-10rem)] pt-19 gap-4">
           <p className="text-muted-foreground">暂无待分发的违章信息</p>
+          <Button
+            onClick={() => navigate("/upload")}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-6"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            上传违章
+          </Button>
         </div>
         <BottomNavigationBar>
           <BottomNavigationItem label="处理" location="/" />
@@ -167,7 +184,9 @@ function DefaultPage() {
         <div className="bg-background p-4">
           <h2 className="text-lg font-medium text-foreground mb-3">相关监控图片</h2>
           <img
-            src={currentViolation.imageUrl || "https://via.placeholder.com/400x200?text=No+Image"}
+            src={currentViolation.imageUrl
+              ? (currentViolation.imageUrl.startsWith('http') ? currentViolation.imageUrl : `${API_SERVER}${currentViolation.imageUrl}`)
+              : "https://via.placeholder.com/400x200?text=No+Image"}
             alt="违章图片"
             className="w-full h-48 object-cover rounded"
           />
