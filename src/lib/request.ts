@@ -121,6 +121,10 @@ export const policeApi = {
   // 获取违章详情
   getViolationDetail: (id: number) => baseRequest(`/police/violations/${id}`),
 
+  // 删除违章记录
+  deleteViolation: (id: number) =>
+    baseRequest(`/police/violations/${id}`, { method: 'DELETE' }),
+
   // 分发违章给村长
   dispatchViolation: (id: number, villageChiefIds: number[]) =>
     baseRequest(
