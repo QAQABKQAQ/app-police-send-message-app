@@ -21,6 +21,39 @@ const VIOLATION_TAGS = [
     "超速", "违规载人", "非法改装", "未悬挂号牌", "号牌污损",
 ];
 
+// 生成随机姓名
+const generateRandomName = () => {
+    const surnames = ["张", "王", "李", "赵", "刘", "陈", "杨", "黄", "周", "吴"];
+    const names = ["伟", "芳", "娜", "秀英", "敏", "静", "丽", "强", "磊", "军", "洋", "勇", "艳", "杰", "涛", "明", "超", "秀兰"];
+    return surnames[Math.floor(Math.random() * surnames.length)] +
+           names[Math.floor(Math.random() * names.length)];
+};
+
+// 生成随机手机号
+const generateRandomPhone = () => {
+    const prefixes = ["130", "131", "132", "133", "135", "136", "137", "138", "139",
+                      "150", "151", "152", "153", "155", "156", "157", "158", "159",
+                      "180", "181", "182", "183", "185", "186", "187", "188", "189"];
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const suffix = Math.floor(Math.random() * 100000000).toString().padStart(8, "0");
+    return prefix + suffix;
+};
+
+// 生成随机车牌号
+const generateRandomPlate = () => {
+    const provinces = ["京", "津", "冀", "晋", "蒙", "辽", "吉", "黑", "沪", "苏", "浙", "皖", "闽", "赣", "鲁", "豫", "鄂", "湘", "粤", "桂", "琼", "渝", "川", "贵", "云", "藏", "陕", "甘", "青", "宁", "新"];
+    const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+
+    const province = provinces[Math.floor(Math.random() * provinces.length)];
+    const letter = letters[Math.floor(Math.random() * letters.length)];
+    let suffix = "";
+    for (let i = 0; i < 5; i++) {
+        suffix += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return province + letter + suffix;
+};
+
 function UploadViolationPage() {
     const navigate = useNavigate();
 
@@ -56,6 +89,14 @@ function UploadViolationPage() {
             setImagePreview(ev.target?.result as string);
         };
         reader.readAsDataURL(file);
+
+        // 拍照后自动生成并填入随机数据
+        setViolationTag(VIOLATION_TAGS[Math.floor(Math.random() * VIOLATION_TAGS.length)]);
+        setPlateNumber(generateRandomPlate());
+        setOffenderName(generateRandomName());
+        setOffenderPhone(generateRandomPhone());
+        setOwnerName(generateRandomName());
+        setOwnerPhone(generateRandomPhone());
     };
 
     // 返回上一页

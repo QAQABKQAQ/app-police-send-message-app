@@ -6,7 +6,7 @@ import { BottomNavigationBar, BottomNavigationItem } from "@/components/nav/bott
 import { TitleBar } from "@/components/text/title-bar";
 import { SelectDistrictDrawer } from "@/components/drawer/SelectDistrictDrawer";
 import { policeApi, API_SERVER } from "@/lib/request";
-import { Plus, Trash2, List, X } from "lucide-react";
+import { Plus, Trash2, List } from "lucide-react";
 import {
   Dialog,
   DialogContent,

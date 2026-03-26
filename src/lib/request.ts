@@ -5,6 +5,70 @@ interface ApiResponse<T = any> {
   error?: string;
 }
 
+const normalizeServerUrl = (server: string) => server.trim().replace(/\/+$/, "");
+
+const resolveApiServer = () => {
+  const envServer = normalizeServerUrl(import.meta.env.VITE_API_SERVER || "");
+  if (envServer) {
+    return envServer;
+  }
+
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    if ((protocol === "http:" || protocol === "https:") && hostname) {
+      return `${protocol}//${hostname}:3000`;
+    }
+  }
+
+  return "http://127.0.0.1:3000";
+};
+
+const buildApiUrl = (path: string) => `${resolveApiServer()}/api${path}`;
+
+const parseApiResponse = async <T>(response: Response) => {
+  const rawBody = await response.text();
+  if (!rawBody) {
+    return {
+      rawBody,
+      data: null as ApiResponse<T> | null,
+    };
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const looksLikeJson =
+    contentType.includes("application/json") ||
+    rawBody.startsWith("{") ||
+    rawBody.startsWith("[");
+
+  if (!looksLikeJson) {
+    return {
+      rawBody,
+      data: null as ApiResponse<T> | null,
+    };
+  }
+
+  return {
+    rawBody,
+    data: JSON.parse(rawBody) as ApiResponse<T>,
+  };
+};
+
+const toRequestError = (error: unknown) => {
+  if (error instanceof TypeError) {
+    return new Error(
+      `无法连接到服务器 ${resolveApiServer()}，请确认后端已启动，且手机与开发机在同一网络`
+    );
+  }
+
+  if (error instanceof SyntaxError) {
+    return new Error(
+      `服务器 ${resolveApiServer()} 返回了无效响应，请检查后端接口或代理配置`
+    );
+  }
+
+  return error instanceof Error ? error : new Error("网络请求失败");
+};
+
 // 存储认证令牌
 let authToken: string | null = null;
 
@@ -33,38 +97,36 @@ export const clearAuthToken = () => {
 };
 
 // 后端服务器地址
-// export const API_SERVER = 'https://api.police.message.creteper.xyz';
-export const API_SERVER = 'http://192.168.35.236:3000';
+export const API_SERVER = resolveApiServer();
 
 // 基础请求函数
 const baseRequest = async <T>(
   url: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> => {
-  // const baseUrl = 'https://api.police.message.creteper.xyz/api';
-  const baseUrl = `${API_SERVER}/api`;
+  const token = getAuthToken();
 
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
-      ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+      ...(token && { 'Authorization': `Bearer ${token}` }),
       ...options.headers,
     },
     ...options,
   };
 
   try {
-    const response = await fetch(`${baseUrl}${url}`, config);
-    const data: ApiResponse<T> = await response.json();
+    const response = await fetch(buildApiUrl(url), config);
+    const { data, rawBody } = await parseApiResponse<T>(response);
 
     if (!response.ok) {
-      throw new Error(data.error || '请求失败');
+      throw new Error(data?.error || data?.message || rawBody || `请求失败 (${response.status})`);
     }
 
-    return data;
+    return data || ({ success: true } as ApiResponse<T>);
   } catch (error) {
     console.error(`API请求错误: ${url}`, error);
-    throw error instanceof Error ? error : new Error('网络请求失败');
+    throw toRequestError(error);
   }
 };
 
@@ -197,24 +259,28 @@ export const policeApi = {
     }
     const token = getAuthToken();
 
-    // const response = await fetch('https://api.police.message.creteper.xyz/api/police/violations/upload', {
-    const response = await fetch(`${API_SERVER}/api/police/violations/upload`, {
-      method: 'POST',
-      headers: {
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-      },
-      body: formData,
-    });
+    try {
+      const response = await fetch(buildApiUrl('/police/violations/upload'), {
+        method: 'POST',
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: formData,
+      });
 
-    const data = await response.json();
+      const { data, rawBody } = await parseApiResponse<any>(response);
 
-    if (!response.ok) {
-      const error = new Error(data.error || '上传失败') as Error & { status: number };
-      error.status = response.status;
-      throw error;
+      if (!response.ok) {
+        const error = new Error(data?.error || data?.message || rawBody || '上传失败') as Error & { status: number };
+        error.status = response.status;
+        throw error;
+      }
+
+      return data || ({ success: true } as ApiResponse<any>);
+    } catch (error) {
+      console.error('API请求错误: /police/violations/upload', error);
+      throw toRequestError(error);
     }
-
-    return data as ApiResponse<any>;
   },
 };
 
